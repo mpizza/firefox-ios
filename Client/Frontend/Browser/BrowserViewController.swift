@@ -131,6 +131,22 @@ class BrowserViewController: UIViewController {
         super.viewWillAppear(animated)
     }
 
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+
+        let hasSeenIntro = profile.prefs.intForKey("HasSeenIntro")
+        if hasSeenIntro == nil {
+            profile.prefs.setInt(1, forKey: "HasSeenIntro")
+
+            let introViewController = IntroViewController()
+            introViewController.delegate = self
+
+            introViewController.modalPresentationStyle = UIModalPresentationStyle.FormSheet
+            introViewController.preferredContentSize = CGSizeMake(375, 667)
+            presentViewController(introViewController, animated: false, completion: nil)
+        }
+    }
+
     override func updateViewConstraints() {
         webViewContainer.snp_remakeConstraints { make in
             make.edges.equalTo(self.view)
@@ -1405,5 +1421,17 @@ private class BrowserScreenshotHelper: ScreenshotHelper {
         }
 
         return nil
+    }
+}
+
+extension BrowserViewController: IntroViewControllerDelegate {
+    func introViewControllerDidFinish(introViewController: IntroViewController) {
+        introViewController.dismissViewControllerAnimated(true, completion: nil)
+    }
+    func introViewControllerDidRequestToLogin(introViewController: IntroViewController) {
+        let controller = SettingsNavigationController()
+        controller.profile = profile
+        controller.tabManager = tabManager
+        introViewController.presentViewController(controller, animated: true, completion: nil)
     }
 }
